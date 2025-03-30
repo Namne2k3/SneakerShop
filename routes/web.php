@@ -13,6 +13,9 @@ use App\Http\Controllers\Auth\ConfirmPasswordController;
 use App\Http\Controllers\Auth\VerificationController;
 use App\Http\Controllers\ReviewController;
 use App\Http\Controllers\WishlistController;
+use App\Http\Controllers\OrderController;
+use App\Http\Controllers\CouponController;
+use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Auth;
 
 /*
@@ -30,6 +33,7 @@ Route::get('/brand/{slug}', [BrandController::class, 'showProductsByBrand'])->na
 Route::get('/contact', [HomeController::class, 'contact'])->name('contact');
 Route::post('/contact', [HomeController::class, 'sendContact'])->name('contact.send');
 Route::get('/search', [ProductController::class, 'search'])->name('search');
+Route::post('/validate-coupon', [CouponController::class, 'validateCoupon'])->name('coupon.validate');
 Route::get('/cart', [HomeController::class, 'cart'])->name('cart');
 
 // Wishlist routes
@@ -69,6 +73,7 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/profile', [HomeController::class, 'profile'])->name('profile');
     Route::post('/profile/update', [HomeController::class, 'updateProfile'])->name('profile.update');
     Route::get('/orders', [HomeController::class, 'orders'])->name('orders');
+    Route::get('/orders/{order}', [HomeController::class, 'showOrder'])->name('orders.show');
     Route::post('/orders/{order}/cancel', [HomeController::class, 'cancelOrder'])->name('order.cancel');
     Route::post('/add-to-cart', [HomeController::class, 'addToCart'])->name('cart.add');
     Route::post('/update-cart', [HomeController::class, 'updateCart'])->name('cart.update');
@@ -91,10 +96,34 @@ Route::prefix('admin')->middleware(['auth', 'admin'])->name('admin.')->group(fun
     Route::get('/products/{product}/edit', [ProductController::class, 'edit'])->name('products.edit');
     Route::put('/products/{product}', [ProductController::class, 'update'])->name('products.update');
     Route::delete('/products/{product}', [ProductController::class, 'destroy'])->name('products.destroy');
+    Route::post('/products/bulk-action', [ProductController::class, 'bulkAction'])->name('products.bulk-action');
+    Route::post('/products/update-status', [ProductController::class, 'updateStatus'])->name('products.update-status');
     
     // Category management
     Route::resource('categories', CategoryController::class);
     
     // Brand management
     Route::resource('brands', BrandController::class);
+    
+    // Order management
+    Route::get('/orders', [OrderController::class, 'index'])->name('orders.index');
+    Route::get('/orders/{order}', [OrderController::class, 'show'])->name('orders.show');
+    Route::put('/orders/{order}/status', [OrderController::class, 'updateStatus'])->name('orders.update-status');
+    Route::delete('/orders/{order}', [OrderController::class, 'destroy'])->name('orders.destroy');
+    Route::delete('/orders/bulk-action', [OrderController::class, 'bulkAction'])->name('orders.bulk-action');
+    
+    // Coupon management
+    Route::resource('coupons', CouponController::class);
+    
+    // User management
+    Route::get('/users', [UserController::class, 'index'])->name('users.index');
+    Route::get('/users/create', [UserController::class, 'create'])->name('users.create');
+    Route::post('/users', [UserController::class, 'store'])->name('users.store');
+    Route::get('/users/{user}', [UserController::class, 'show'])->name('users.show');
+    Route::get('/users/{user}/edit', [UserController::class, 'edit'])->name('users.edit');
+    Route::put('/users/{user}', [UserController::class, 'update'])->name('users.update');
+    Route::delete('/users/{user}', [UserController::class, 'destroy'])->name('users.destroy');
+    Route::patch('/users/{user}/toggle-active', [UserController::class, 'toggleActive'])->name('users.toggle-active');
+    Route::post('/users/bulk-action', [UserController::class, 'bulkAction'])->name('users.bulk-action');
+    Route::post('/users/update-status', [UserController::class, 'updateStatus'])->name('users.update-status');
 });

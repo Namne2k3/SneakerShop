@@ -18,7 +18,10 @@ class ProductController extends Controller
     public function adminIndex()
     {
         $products = Product::with(['categories', 'brand'])->paginate(10);
-        return view('admin.products.index', compact('products'));
+        $categories = Category::all();
+        $brands = Brand::all();
+        
+        return view('admin.products.index', compact('products', 'categories', 'brands'));
     }
 
     public function create()
@@ -41,7 +44,8 @@ class ProductController extends Controller
             'active' => 'boolean',
             'categories' => 'required|array',
             'categories.*' => 'exists:categories,id',
-            'images.*' => 'image|mimes:jpeg,png,jpg,gif|max:2048',
+            'images' => 'nullable|array',
+            'images.*' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
             'variants' => 'nullable|array',
             'variants.*.size' => 'required|string',
             'variants.*.color' => 'required|string',
@@ -129,6 +133,7 @@ class ProductController extends Controller
             'active' => 'boolean',
             'categories' => 'required|array',
             'categories.*' => 'exists:categories,id',
+            'new_images' => 'nullable|array',
             'new_images.*' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
             'variants' => 'nullable|array',
         ]);
@@ -226,6 +231,74 @@ class ProductController extends Controller
 
         return redirect()->route('admin.products.index')
             ->with('success', 'Sản phẩm đã được xóa thành công!');
+    }
+    
+    public function bulkAction(Request $request)
+    {
+        $validated = $request->validate([
+            'ids' => 'required|json',
+            'action' => 'required|string|in:active,inactive,delete',
+        ]);
+        
+        $ids = json_decode($validated['ids']);
+        $action = $validated['action'];
+        
+        if (empty($ids)) {
+            return redirect()->back()->with('error', 'Không có sản phẩm nào được chọn.');
+        }
+        
+        switch ($action) {
+            case 'active':
+                Product::whereIn('id', $ids)->update(['active' => true]);
+                $message = 'Đã hiển thị ' . count($ids) . ' sản phẩm thành công.';
+                break;
+                
+            case 'inactive':
+                Product::whereIn('id', $ids)->update(['active' => false]);
+                $message = 'Đã ẩn ' . count($ids) . ' sản phẩm thành công.';
+                break;
+                
+            case 'delete':
+                // Find all products that need to be deleted
+                $products = Product::whereIn('id', $ids)->get();
+                
+                foreach ($products as $product) {
+                    // Delete images
+                    foreach ($product->images as $image) {
+                        if (Storage::disk('public')->exists($image->image_path)) {
+                            Storage::disk('public')->delete($image->image_path);
+                        }
+                    }
+                    
+                    // Delete the product
+                    $product->delete();
+                }
+                
+                $message = 'Đã xóa ' . count($ids) . ' sản phẩm thành công.';
+                break;
+                
+            default:
+                return redirect()->back()->with('error', 'Thao tác không hợp lệ.');
+        }
+        
+        return redirect()->back()->with('success', $message);
+    }
+    
+    public function updateStatus(Request $request)
+    {
+        $validated = $request->validate([
+            'product_id' => 'required|exists:products,id',
+            'active' => 'required|boolean',
+        ]);
+        
+        $product = Product::findOrFail($validated['product_id']);
+        $product->active = $validated['active'];
+        $product->save();
+        
+        return response()->json([
+            'success' => true,
+            'message' => 'Trạng thái sản phẩm đã được cập nhật.',
+        ]);
     }
     
     // Frontend methods

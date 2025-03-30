@@ -219,23 +219,35 @@
                         </a>
                         
                         <div class="sb-sidenav-menu-heading">Quản lý đơn hàng</div>
-                        <a class="nav-link" href="#">
+                        <a class="nav-link {{ request()->routeIs('admin.orders.*') ? 'active' : '' }}" href="{{ route('admin.orders.index') }}">
                             <div class="sb-nav-link-icon"><i class="fas fa-shopping-cart"></i></div>
                             Đơn hàng
                         </a>
-                        <a class="nav-link" href="#">
+                        <a class="nav-link {{ request()->routeIs('admin.coupons.*') ? 'active' : '' }}" href="{{ route('admin.coupons.index') }}">
                             <div class="sb-nav-link-icon"><i class="fas fa-tag"></i></div>
                             Mã giảm giá
                         </a>
                         
                         <div class="sb-sidenav-menu-heading">Người dùng</div>
-                        <a class="nav-link" href="#">
+                        <a class="nav-link {{ request()->routeIs('admin.users.*') && request('role') === 'customer' ? 'active' : '' }}" 
+                           href="{{ route('admin.users.index', ['role' => 'customer']) }}">
                             <div class="sb-nav-link-icon"><i class="fas fa-users"></i></div>
                             Khách hàng
                         </a>
-                        <a class="nav-link" href="#">
+                        <a class="nav-link {{ request()->routeIs('admin.users.*') && request('role') === 'admin' ? 'active' : '' }}" 
+                           href="{{ route('admin.users.index', ['role' => 'admin']) }}">
                             <div class="sb-nav-link-icon"><i class="fas fa-user-shield"></i></div>
                             Quản trị viên
+                        </a>
+                        
+                        <div class="sb-sidenav-menu-heading">Báo cáo & Thống kê</div>
+                        <a class="nav-link" href="#">
+                            <div class="sb-nav-link-icon"><i class="fas fa-chart-bar"></i></div>
+                            Doanh thu
+                        </a>
+                        <a class="nav-link" href="#">
+                            <div class="sb-nav-link-icon"><i class="fas fa-chart-pie"></i></div>
+                            Sản phẩm bán chạy
                         </a>
                         
                         <div class="sb-sidenav-menu-heading">Hệ thống</div>

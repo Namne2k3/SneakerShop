@@ -37,6 +37,27 @@ a {
     padding: 20px;
 }
 
+/* Carousel Controls - Fix for buttons */
+.carousel-control-prev,
+.carousel-control-next {
+    width: 10%;
+    opacity: 0.7;
+}
+
+.carousel-control-prev:hover,
+.carousel-control-next:hover {
+    opacity: 1;
+}
+
+.carousel-control-prev-icon,
+.carousel-control-next-icon {
+    width: 40px;
+    height: 40px;
+    background-color: rgba(0, 0, 0, 0.5);
+    border-radius: 50%;
+    background-size: 55%;
+}
+
 /* Product Cards */
 .card {
     transition: all 0.3s ease;
