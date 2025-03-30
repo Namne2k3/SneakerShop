@@ -113,6 +113,24 @@
         color: #dc3545;
         font-weight: bold;
     }
+    
+    /* Heart animation */
+    .btn-wishlist {
+        transition: all 0.3s ease;
+    }
+    
+    .btn-wishlist.active {
+        color: #dc3545;
+        border-color: #dc3545;
+    }
+    
+    .btn-wishlist.active i {
+        transform: scale(1.2);
+    }
+    
+    .wishlist-icon {
+        transition: all 0.3s ease;
+    }
 </style>
 @endsection
 
@@ -246,8 +264,8 @@
                     <button type="submit" id="add-to-cart-btn" class="btn btn-primary me-md-2">
                         <i class="fas fa-shopping-cart me-2"></i>Thêm vào giỏ
                     </button>
-                    <button type="button" id="add-to-wishlist-btn" class="btn btn-outline-secondary">
-                        <i class="far fa-heart me-2"></i>Yêu thích
+                    <button type="button" id="add-to-wishlist-btn" class="btn btn-outline-secondary {{ $isInWishlist ? 'active' : '' }}" data-product-id="{{ $product->id }}">
+                        <i class="wishlist-icon {{ $isInWishlist ? 'fas' : 'far' }} fa-heart me-2"></i>{{ $isInWishlist ? 'Đã yêu thích' : 'Yêu thích' }}
                     </button>
                 </div>
             </form>
@@ -485,6 +503,44 @@
         if (variants.length > 0) {
             $('#add-to-cart-btn').prop('disabled', true);
         }
+
+        // Wishlist functionality
+        $('#add-to-wishlist-btn').click(function() {
+            const productId = $(this).data('product-id');
+            const button = $(this);
+            
+            $.ajax({
+                url: "{{ route('wishlist.toggle') }}",
+                type: "POST",
+                data: {
+                    product_id: productId,
+                    _token: "{{ csrf_token() }}"
+                },
+                success: function(response) {
+                    if (response.status === 'success') {
+                        if (response.action === 'added') {
+                            button.addClass('active');
+                            button.find('.wishlist-icon').removeClass('far').addClass('fas');
+                            button.html('<i class="wishlist-icon fas fa-heart me-2"></i>Đã yêu thích');
+                            toastr.success(response.message);
+                        } else {
+                            button.removeClass('active');
+                            button.find('.wishlist-icon').removeClass('fas').addClass('far');
+                            button.html('<i class="wishlist-icon far fa-heart me-2"></i>Yêu thích');
+                            toastr.info(response.message);
+                        }
+                    }
+                },
+                error: function(xhr) {
+                    if (xhr.status === 401) {
+                        // Người dùng chưa đăng nhập
+                        window.location.href = xhr.responseJSON.redirect;
+                    } else {
+                        toastr.error('Có lỗi xảy ra. Vui lòng thử lại sau.');
+                    }
+                }
+            });
+        });
     });
 </script>
 @endsection

@@ -14,7 +14,7 @@
                 <div class="list-group list-group-flush">
                     <a href="{{ route('profile') }}" class="list-group-item list-group-item-action active">Thông tin cá nhân</a>
                     <a href="{{ route('orders') }}" class="list-group-item list-group-item-action">Đơn hàng của tôi</a>
-                    <a href="#" class="list-group-item list-group-item-action">Sản phẩm yêu thích</a>
+                    <a href="{{ route('wishlist')}}" class="list-group-item list-group-item-action">Sản phẩm yêu thích</a>
                     <a href="{{ route('logout') }}" class="list-group-item list-group-item-action text-danger" 
                        onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
                        Đăng xuất

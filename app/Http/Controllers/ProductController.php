@@ -7,6 +7,7 @@ use App\Models\Category;
 use App\Models\Brand;
 use App\Models\ProductImage;
 use App\Models\ProductVariant;
+use App\Models\Wishlist;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
@@ -290,21 +291,29 @@ class ProductController extends Controller
     
     public function show($slug)
     {
-        $product = Product::where('slug', $slug)
-            ->where('active', 1)
-            ->with(['images', 'variants', 'categories', 'brand', 'reviews.user'])
-            ->firstOrFail();
-            
-        // Sản phẩm liên quan
-        $relatedProducts = Product::where('active', 1)
-            ->whereHas('categories', function($query) use ($product) {
-                $query->whereIn('categories.id', $product->categories->pluck('id'));
-            })
-            ->where('id', '!=', $product->id)
+        $product = Product::where('slug', $slug)->with(['categories', 'brand', 'images', 'variants', 'reviews.user'])->firstOrFail();
+    
+        // Get related products
+        $relatedProducts = Product::whereHas('categories', function($query) use ($product) {
+            $query->whereIn('categories.id', $product->categories->pluck('id'));
+        })->where('id', '!=', $product->id)
+            ->with(['images'])
             ->take(4)
             ->get();
-            
-        return view('frontend.product_details', compact('product', 'relatedProducts'));
+        
+        // Check if product is in user's wishlist
+        $isInWishlist = false;
+        if (auth()->check()) {
+            $isInWishlist = Wishlist::where('user_id', auth()->id())
+                ->where('product_id', $product->id)
+                ->exists();
+        }
+        
+        return view('frontend.product_details', [
+            'product' => $product,
+            'relatedProducts' => $relatedProducts,
+            'isInWishlist' => $isInWishlist
+        ]);
     }
     
     public function search(Request $request)

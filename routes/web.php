@@ -12,6 +12,7 @@ use App\Http\Controllers\Auth\ResetPasswordController;
 use App\Http\Controllers\Auth\ConfirmPasswordController;
 use App\Http\Controllers\Auth\VerificationController;
 use App\Http\Controllers\ReviewController;
+use App\Http\Controllers\WishlistController;
 use Illuminate\Support\Facades\Auth;
 
 /*
@@ -29,6 +30,11 @@ Route::get('/brand/{slug}', [BrandController::class, 'showProductsByBrand'])->na
 Route::get('/contact', [HomeController::class, 'contact'])->name('contact');
 Route::get('/search', [ProductController::class, 'search'])->name('search');
 Route::get('/cart', [HomeController::class, 'cart'])->name('cart');
+
+// Wishlist routes
+Route::post('/wishlist/toggle', [WishlistController::class, 'toggle'])->name('wishlist.toggle');
+Route::get('/wishlist', [WishlistController::class, 'index'])->name('wishlist.index');
+Route::delete('/wishlist/{id}', [WishlistController::class, 'remove'])->name('wishlist.remove');
 
 // Authentication Routes (thay thế Auth::routes())
 Route::get('login', [LoginController::class, 'showLoginForm'])->name('login');
@@ -67,7 +73,7 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/update-cart', [HomeController::class, 'updateCart'])->name('cart.update');
     Route::get('/checkout', [HomeController::class, 'checkout'])->name('checkout');
     Route::post('/place-order', [HomeController::class, 'placeOrder'])->name('order.place');
-    
+    Route::get('/wishlist', [WishlistController::class, 'index'])->name('wishlist');
     // Reviews routes
     Route::post('/reviews', [ReviewController::class, 'store'])->name('reviews.store');
 });
