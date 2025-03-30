@@ -11,6 +11,7 @@ use App\Http\Controllers\Auth\ForgotPasswordController;
 use App\Http\Controllers\Auth\ResetPasswordController;
 use App\Http\Controllers\Auth\ConfirmPasswordController;
 use App\Http\Controllers\Auth\VerificationController;
+use App\Http\Controllers\ReviewController;
 use Illuminate\Support\Facades\Auth;
 
 /*
@@ -23,7 +24,7 @@ use Illuminate\Support\Facades\Auth;
 Route::get('/', [HomeController::class, 'index'])->name('home');
 Route::get('/shop', [ProductController::class, 'index'])->name('shop');
 Route::get('/product/{slug}', [ProductController::class, 'show'])->name('product.show');
-Route::get('/category/{slug}', [CategoryController::class, 'show'])->name('category.show');
+Route::get('/category/{slug}', [CategoryController::class, 'showProducts'])->name('category.show');
 Route::get('/brand/{slug}', [BrandController::class, 'showProductsByBrand'])->name('brand.show');
 Route::get('/contact', [HomeController::class, 'contact'])->name('contact');
 Route::get('/search', [ProductController::class, 'search'])->name('search');
@@ -53,15 +54,22 @@ Route::get('email/verify', [VerificationController::class, 'show'])->name('verif
 Route::get('email/verify/{id}/{hash}', [VerificationController::class, 'verify'])->name('verification.verify');
 Route::post('email/resend', [VerificationController::class, 'resend'])->name('verification.resend');
 
+// Reviews routes - We will move this outside of the auth middleware since we're using @auth check in the view
+Route::post('/reviews', [ReviewController::class, 'store'])->name('reviews.store')->middleware('auth');
+
 // Protected routes (require authentication)
 Route::middleware(['auth'])->group(function () {
     Route::get('/profile', [HomeController::class, 'profile'])->name('profile');
     Route::post('/profile/update', [HomeController::class, 'updateProfile'])->name('profile.update');
     Route::get('/orders', [HomeController::class, 'orders'])->name('orders');
+    Route::post('/orders/{order}/cancel', [HomeController::class, 'cancelOrder'])->name('order.cancel');
     Route::post('/add-to-cart', [HomeController::class, 'addToCart'])->name('cart.add');
     Route::post('/update-cart', [HomeController::class, 'updateCart'])->name('cart.update');
     Route::get('/checkout', [HomeController::class, 'checkout'])->name('checkout');
     Route::post('/place-order', [HomeController::class, 'placeOrder'])->name('order.place');
+    
+    // Reviews routes
+    Route::post('/reviews', [ReviewController::class, 'store'])->name('reviews.store');
 });
 
 // Admin routes

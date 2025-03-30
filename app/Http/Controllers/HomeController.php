@@ -6,8 +6,13 @@ use Illuminate\Http\Request;
 use App\Models\Product;
 use App\Models\Category;
 use App\Models\Order;
+use App\Models\OrderItem;
+use App\Models\ProductVariant;
+use App\Models\Coupon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Str;
+use Illuminate\Support\Facades\DB;
 
 class HomeController extends Controller
 {
@@ -136,6 +141,141 @@ class HomeController extends Controller
     {
         $orders = Auth::user()->orders()->orderBy('created_at', 'desc')->paginate(10);
         return view('frontend.orders', compact('orders'));
+    }
+    
+    public function cancelOrder(Request $request, Order $order)
+    {
+        // Check if the order belongs to the authenticated user
+        if($order->user_id != Auth::id()) {
+            return redirect()->route('orders')->with('error', 'Bạn không có quyền hủy đơn hàng này!');
+        }
+        
+        // Check if order status is 'pending'
+        if($order->status !== 'pending') {
+            return redirect()->route('orders')->with('error', 'Chỉ có thể hủy đơn hàng chưa được xử lý!');
+        }
+        
+        DB::beginTransaction();
+        try {
+            // Update order status to 'cancelled'
+            $order->status = 'cancelled';
+            if($request->has('cancel_reason')) {
+                $order->notes = ($order->notes ? $order->notes . "\n\n" : '') . "Lý do hủy: " . $request->cancel_reason;
+            }
+            $order->save();
+            
+            // Return items to inventory
+            foreach($order->orderItems as $item) {
+                if($item->product_variant_id) {
+                    $variant = ProductVariant::find($item->product_variant_id);
+                    if($variant) {
+                        $variant->stock += $item->quantity;
+                        $variant->save();
+                    }
+                }
+            }
+            
+            DB::commit();
+            return redirect()->route('orders')->with('success', 'Đơn hàng đã được hủy thành công!');
+        } catch(\Exception $e) {
+            DB::rollBack();
+            return redirect()->route('orders')->with('error', 'Đã xảy ra lỗi khi hủy đơn hàng: ' . $e->getMessage());
+        }
+    }
+
+    public function placeOrder(Request $request)
+    {
+        // Validate request data
+        $request->validate([
+            'shipping_name' => 'required|string|max:255',
+            'shipping_email' => 'required|email|max:255',
+            'shipping_phone' => 'required|string|max:20',
+            'shipping_address' => 'required|string|max:255',
+            'shipping_city' => 'required|string|max:100',
+            'payment_method' => 'required|in:cod,bank_transfer,momo',
+            'total_amount' => 'required|numeric|min:0',
+            'agree' => 'required|accepted',
+            'notes' => 'nullable|string',
+        ]);
+
+        // Check if cart exists and has items
+        $cart = session()->get('cart', []);
+        if (empty($cart)) {
+            return redirect()->route('cart')->with('error', 'Giỏ hàng của bạn đang trống');
+        }
+
+        // Start DB transaction
+        DB::beginTransaction();
+
+        try {
+            // Create new order
+            $order = new Order();
+            $order->order_number = 'ORD-' . strtoupper(Str::random(10));
+            $order->user_id = Auth::id();
+            $order->status = 'pending';
+            $order->total_amount = $request->total_amount;
+            $order->payment_method = $request->payment_method;
+            $order->payment_status = ($request->payment_method == 'cod') ? 'pending' : 'pending';
+            $order->shipping_name = $request->shipping_name;
+            $order->shipping_email = $request->shipping_email;
+            $order->shipping_phone = $request->shipping_phone;
+            $order->shipping_address = $request->shipping_address;
+            $order->shipping_city = $request->shipping_city;
+            $order->notes = $request->notes;
+            
+            // Apply coupon if exists
+            if (session()->has('coupon')) {
+                $coupon = session('coupon');
+                $couponModel = Coupon::where('code', $coupon['code'])->first();
+                
+                if ($couponModel) {
+                    $order->coupon_id = $couponModel->id;
+                    $order->discount_amount = $coupon['type'] == 'fixed' 
+                        ? $coupon['value'] 
+                        : ($request->total_amount * $coupon['value'] / 100);
+                }
+            }
+            
+            $order->save();
+            
+            // Create order items
+            foreach ($cart as $id => $item) {
+                $orderItem = new OrderItem();
+                $orderItem->order_id = $order->id;
+                $orderItem->product_id = $item['product_id'];
+                
+                // Check if it's a variant
+                if (isset($item['variant_id']) && $item['variant_id']) {
+                    $orderItem->product_variant_id = $item['variant_id'];
+                    
+                    // Update stock for variant
+                    $variant = ProductVariant::find($item['variant_id']);
+                    if ($variant) {
+                        $variant->stock = $variant->stock - $item['quantity'];
+                        $variant->save();
+                    }
+                }
+                
+                $orderItem->quantity = $item['quantity'];
+                $orderItem->price = $item['price'];
+                $orderItem->subtotal = $item['price'] * $item['quantity'];
+                $orderItem->save();
+            }
+            
+            // Commit transaction
+            DB::commit();
+            
+            // Clear cart and coupon session
+            session()->forget(['cart', 'coupon']);
+            
+            // Redirect to success page
+            return redirect()->route('orders')->with('success', 'Đặt hàng thành công. Cảm ơn bạn đã mua hàng!');
+            
+        } catch (\Exception $e) {
+            // Rollback in case of error
+            DB::rollBack();
+            return redirect()->back()->with('error', 'Đã xảy ra lỗi khi đặt hàng: ' . $e->getMessage());
+        }
     }
     
     // Admin methods

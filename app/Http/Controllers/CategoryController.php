@@ -112,7 +112,7 @@ class CategoryController extends Controller
     }
     
     // Frontend method
-    public function show($slug)
+    public function showProducts($slug)
     {
         $category = Category::where('slug', $slug)->firstOrFail();
         
