@@ -22,9 +22,9 @@
         <div class="col-md-4">
             <h5>Liên hệ với chúng tôi</h5>
             <ul class="list-unstyled">
-                <li><i class="fas fa-map-marker-alt me-2"></i> 123 Đường ABC, Quận XYZ, TP. HCM</li>
-                <li><i class="fas fa-phone me-2"></i> (123) 456-7890</li>
-                <li><i class="fas fa-envelope me-2"></i> info@sneakershop.com</li>
+                <li><i class="fas fa-map-marker-alt me-2"></i> 22/4c Khu phố 6, Phường Tân Mai, Thành phố Biên Hòa</li>
+                <li><i class="fas fa-phone me-2"></i> (+84) 387-805-723</li>
+                <li><i class="fas fa-envelope me-2"></i> nhpn2003@gmail.com</li>
             </ul>
             <div class="mt-3">
                 <a href="#" class="text-white me-3"><i class="fab fa-facebook fa-lg"></i></a>

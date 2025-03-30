@@ -39,6 +39,22 @@ class HomeController extends Controller
         return view('frontend.contact');
     }
     
+    public function sendContact(Request $request)
+    {
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'email' => 'required|email|max:255',
+            'phone' => 'nullable|string|max:20',
+            'subject' => 'required|string|max:255',
+            'message' => 'required|string',
+        ]);
+        
+        // Trong tương lai, bạn có thể thêm chức năng gửi email hoặc lưu vào database
+        // Mail::to('contact@sneakershop.vn')->send(new ContactFormMail($validated));
+        
+        return redirect()->route('contact')->with('success', 'Cảm ơn bạn đã liên hệ với chúng tôi! Chúng tôi sẽ phản hồi trong thời gian sớm nhất.');
+    }
+    
     public function cart()
     {
         // Lấy giỏ hàng từ session

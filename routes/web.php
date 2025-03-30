@@ -28,6 +28,7 @@ Route::get('/product/{slug}', [ProductController::class, 'show'])->name('product
 Route::get('/category/{slug}', [CategoryController::class, 'showProducts'])->name('category.show');
 Route::get('/brand/{slug}', [BrandController::class, 'showProductsByBrand'])->name('brand.show');
 Route::get('/contact', [HomeController::class, 'contact'])->name('contact');
+Route::post('/contact', [HomeController::class, 'sendContact'])->name('contact.send');
 Route::get('/search', [ProductController::class, 'search'])->name('search');
 Route::get('/cart', [HomeController::class, 'cart'])->name('cart');
 
