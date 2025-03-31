@@ -82,7 +82,7 @@
                                         <small>{{ $order->user->email ?? '' }}</small>
                                     </td>
                                     <td>{{ $order->created_at->format('d/m/Y H:i') }}</td>
-                                    <td>{{ number_format($order->total) }}đ</td>
+                                    <td>{{ number_format($order->total_amount) }}đ</td>
                                     <td>
                                         @php
                                             $statusClass = [
@@ -132,8 +132,8 @@
                     </table>
                 </div>
                 
-                <!-- @if($orders->count() > 0)
-                    <div class="row mb-3">
+                @if($orders->count() > 0)
+                    <div class="row mb-3 mt-3">
                         <div class="col-md-6">
                             <div class="form-inline">
                                 <label class="me-2">Với các đơn hàng đã chọn:</label>
@@ -150,11 +150,11 @@
                                 </div>
                             </div>
                         </div>
-                        <div class="col-md-6">
+                        <div class="col-md-6 d-flex justify-content-end">
                             {{ $orders->appends(request()->query())->links() }}
                         </div>
                     </div>
-                @endif -->
+                @endif
                 
                 <input type="hidden" name="ids" id="selected-ids">
             </form>
@@ -242,7 +242,7 @@
                 const currentStatus = button.getAttribute('data-status');
                 
                 const form = updateStatusModal.querySelector('#update-status-form');
-                form.action = `{{ route('admin.orders.index') }}/${orderId}/status`;
+                form.action = `{{ url('admin/orders') }}/${orderId}/status`;
                 
                 const statusSelect = updateStatusModal.querySelector('#status');
                 statusSelect.value = currentStatus;

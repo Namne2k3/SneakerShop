@@ -15,9 +15,51 @@ use Illuminate\Support\Str;
 class ProductController extends Controller
 {
     // Admin methods
-    public function adminIndex()
+    public function adminIndex(Request $request)
     {
-        $products = Product::with(['categories', 'brand'])->paginate(10);
+        // Khởi tạo query với eager loading các relationships
+        $query = Product::with(['categories', 'brand', 'variants', 'images']);
+        
+       
+        // Filter by brand if specified
+        if ($request->filled('brand')) {
+            $brandId = $request->input('brand');
+            
+            $query->where('brand_id', $brandId);
+        }
+        
+        // Filter by category if specified
+        if ($request->filled('category')) {
+            $categoryId = $request->input('category');
+            
+            $query->whereHas('categories', function($q) use ($categoryId) {
+                $q->where('categories.id', $categoryId);
+            });
+        }
+        
+        // Filter by active status if specified
+        if ($request->filled('status')) {
+            $status = (int) $request->input('status');
+           
+            $query->where('active', $status);
+        }
+        
+        // Search by name, slug or description
+        if ($request->filled('search')) {
+            $search = $request->input('search');
+           
+            $query->where(function($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
+                  ->orWhere('slug', 'like', "%{$search}%")
+                  ->orWhere('description', 'like', "%{$search}%");
+            });
+        }
+        
+        // Lấy danh sách sản phẩm với phân trang
+        $products = $query->orderBy('created_at', 'desc')->paginate(10);
+        
+        
+        
         $categories = Category::all();
         $brands = Brand::all();
         

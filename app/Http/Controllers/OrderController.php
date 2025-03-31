@@ -15,11 +15,13 @@ class OrderController extends Controller
         
         $query = Order::with(['user']);
         
+        // Lọc theo trạng thái nếu được chỉ định và khác 'all'
         if ($status !== 'all') {
             $query->where('status', $status);
         }
         
-        if ($request->has('search')) {
+        // Tìm kiếm nếu có từ khóa và không rỗng
+        if ($request->has('search') && !empty($request->get('search'))) {
             $search = $request->get('search');
             $query->where(function($q) use ($search) {
                 $q->where('order_number', 'like', "%$search%")

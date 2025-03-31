@@ -219,7 +219,20 @@
             productCheckboxes.forEach(checkbox => {
                 checkbox.checked = this.checked;
             });
+            updateSelectAllStatus();
         });
+        
+        productCheckboxes.forEach(checkbox => {
+            checkbox.addEventListener('change', function() {
+                updateSelectAllStatus();
+            });
+        });
+        
+        function updateSelectAllStatus() {
+            const checkedBoxes = document.querySelectorAll('.product-checkbox:checked').length;
+            const totalBoxes = productCheckboxes.length;
+            selectAll.checked = checkedBoxes > 0 && checkedBoxes === totalBoxes;
+        }
         
         // Bulk actions
         const bulkActions = document.querySelectorAll('.bulk-action');

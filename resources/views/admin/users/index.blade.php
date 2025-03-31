@@ -184,7 +184,20 @@
             userCheckboxes.forEach(checkbox => {
                 checkbox.checked = this.checked;
             });
+            updateSelectAllStatus();
         });
+        
+        userCheckboxes.forEach(checkbox => {
+            checkbox.addEventListener('change', function() {
+                updateSelectAllStatus();
+            });
+        });
+        
+        function updateSelectAllStatus() {
+            const checkedBoxes = document.querySelectorAll('.user-checkbox:checked').length;
+            const totalBoxes = userCheckboxes.length;
+            selectAll.checked = checkedBoxes > 0 && checkedBoxes === totalBoxes;
+        }
         
         // Bulk actions
         const bulkActions = document.querySelectorAll('.bulk-action');

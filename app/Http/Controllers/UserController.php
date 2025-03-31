@@ -17,20 +17,20 @@ class UserController extends Controller
     {
         $query = User::query();
         
-        // Filter by role if specified
-        if ($request->has('role')) {
+        // Filter by role if specified and not empty
+        if ($request->has('role') && !empty($request->get('role'))) {
             $role = $request->get('role');
             $query->where('role', $role);
         }
         
-        // Filter by active status if specified
+        // Filter by active status if specified and not empty string
         if ($request->has('status') && $request->get('status') !== '') {
             $status = (bool) $request->get('status');
             $query->where('active', $status);
         }
         
-        // Search by name or email
-        if ($request->has('search')) {
+        // Search by name, email or phone if specified and not empty
+        if ($request->has('search') && !empty($request->get('search'))) {
             $search = $request->get('search');
             $query->where(function($q) use ($search) {
                 $q->where('name', 'like', "%$search%")
