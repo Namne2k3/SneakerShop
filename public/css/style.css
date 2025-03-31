@@ -146,3 +146,33 @@ footer a:hover {
 .cart-item:last-child {
     border-bottom: none;
 }
+
+/* Pagination Fix for SVG Icons */
+.pagination svg {
+    width: 20px;
+    height: 20px;
+    vertical-align: middle;
+}
+
+.page-item.active .page-link {
+    background-color: #333;
+    border-color: #333;
+}
+
+.page-link {
+    color: #333;
+}
+
+.page-link:hover {
+    color: #000;
+}
+
+/* Fix for Laravel Pagination Navigation */
+nav[aria-label="Pagination Navigation"] {
+    margin-top: 1rem;
+}
+
+nav[aria-label="Pagination Navigation"] svg {
+    max-width: 20px;
+    max-height: 20px;
+}

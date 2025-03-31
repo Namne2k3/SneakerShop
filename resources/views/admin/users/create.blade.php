@@ -74,6 +74,16 @@
                         </div>
                         
                         <div class="mb-3">
+                            <label for="password_confirmation" class="form-label">Xác nhận mật khẩu <span class="text-danger">*</span></label>
+                            <div class="input-group">
+                                <input type="password" class="form-control" id="password_confirmation" name="password_confirmation" required>
+                                <button class="btn btn-outline-secondary" type="button" id="toggleConfirmPassword">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
                             <label for="role" class="form-label">Vai trò <span class="text-danger">*</span></label>
                             <select class="form-select @error('role') is-invalid @enderror" id="role" name="role" required>
                                 <option value="customer" {{ old('role') == 'customer' ? 'selected' : '' }}>Khách hàng</option>
@@ -115,6 +125,19 @@
         togglePassword.addEventListener('click', function() {
             const type = password.getAttribute('type') === 'password' ? 'text' : 'password';
             password.setAttribute('type', type);
+            
+            // Toggle eye icon
+            this.querySelector('i').classList.toggle('fa-eye');
+            this.querySelector('i').classList.toggle('fa-eye-slash');
+        });
+
+        // Toggle confirm password visibility
+        const toggleConfirmPassword = document.getElementById('toggleConfirmPassword');
+        const passwordConfirmation = document.getElementById('password_confirmation');
+        
+        toggleConfirmPassword.addEventListener('click', function() {
+            const type = passwordConfirmation.getAttribute('type') === 'password' ? 'text' : 'password';
+            passwordConfirmation.setAttribute('type', type);
             
             // Toggle eye icon
             this.querySelector('i').classList.toggle('fa-eye');

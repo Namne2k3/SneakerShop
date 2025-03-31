@@ -51,7 +51,7 @@
                 </div>
                 <div class="card-body">
                     <div class="row mb-3">
-                        <div class="col-md-6"></div>
+                        <div class="col-md-6">
                             <table class="table table-borderless">
                                 <tr>
                                     <th>Mã đơn hàng:</th>
@@ -68,7 +68,7 @@
                                 <tr>
                                     <th>Trạng thái thanh toán:</th>
                                     <td>
-                                        @if($order->payment_status)
+                                        @if($order->payment_status == 'paid')
                                             <span class="badge bg-success">Đã thanh toán</span>
                                         @else
                                             <span class="badge bg-warning">Chưa thanh toán</span>
@@ -79,23 +79,30 @@
                         </div>
                         <div class="col-md-6">
                             <table class="table table-borderless">
+                                @php
+                                    // Tính tổng giá trị sản phẩm
+                                    $subtotal = 0;
+                                    foreach($order->orderItems as $item) {
+                                        $subtotal += $item->price * $item->quantity;
+                                    }
+                                @endphp
                                 <tr>
                                     <th>Tổng tiền hàng:</th>
-                                    <td>{{ number_format($order->subtotal) }}đ</td>
+                                    <td>{{ number_format($subtotal) }}đ</td>
                                 </tr>
-                                @if($order->discount > 0)
+                                @if($order->discount_amount > 0)
                                 <tr>
                                     <th>Giảm giá:</th>
-                                    <td>-{{ number_format($order->discount) }}đ</td>
+                                    <td>-{{ number_format($order->discount_amount) }}đ</td>
                                 </tr>
                                 @endif
                                 <tr>
                                     <th>Phí vận chuyển:</th>
-                                    <td>{{ number_format($order->shipping_fee) }}đ</td>
+                                    <td>{{ number_format(0) }}đ</td>
                                 </tr>
                                 <tr>
                                     <th>Tổng thanh toán:</th>
-                                    <td class="fw-bold">{{ number_format($order->total) }}đ</td>
+                                    <td class="fw-bold">{{ number_format($order->total_amount) }}đ</td>
                                 </tr>
                             </table>
                         </div>
@@ -120,7 +127,7 @@
                                         @if($item->product)
                                             <div class="d-flex align-items-center">
                                                 @if(isset($item->product->images[0]))
-                                                <img src="{{ asset('storage/' . $item->product->images[0]->path) }}" 
+                                                <img src="{{ asset('storage/' . $item->product->images[0]->image_path) }}" 
                                                     alt="{{ $item->product->name }}" class="img-thumbnail me-2" style="width: 50px; height: 50px; object-fit: cover;">
                                                 @endif
                                                 {{ $item->product->name }}
@@ -148,7 +155,7 @@
             </div>
             
             <!-- Order History -->
-            <!-- <div class="card mb-4">
+            <div class="card mb-4">
                 <div class="card-header">
                     <i class="fas fa-history me-1"></i>
                     Lịch sử đơn hàng
@@ -160,10 +167,10 @@
                             <h6 class="timeline-title">Đơn hàng được tạo</h6>
                             <p>Khách hàng đã đặt đơn hàng thành công.</p>
                         </li>
-                        
+                        <!-- More timeline items would be dynamically added based on order history -->
                     </ul>
                 </div>
-            </div> -->
+            </div>
         </div>
         
         <div class="col-md-4">
@@ -177,7 +184,7 @@
                     @if($order->user)
                         <p><strong>Tên khách hàng:</strong> {{ $order->user->name }}</p>
                         <p><strong>Email:</strong> {{ $order->user->email }}</p>
-                        <p><strong>Số điện thoại:</strong> {{ $order->user->phone ?? 'N/A' }}</p>
+                        <p><strong>Số điện thoại:</strong> {{ $order->shipping_phone }}</p>
                         <p><strong>Ngày đăng ký:</strong> {{ $order->user->created_at->format('d/m/Y') }}</p>
                         <a href="{{ route('admin.users.show', $order->user->id) }}" class="btn btn-outline-primary btn-sm">
                             Xem chi tiết khách hàng
@@ -197,10 +204,33 @@
                 <div class="card-body">
                     <p><strong>Người nhận:</strong> {{ $order->shipping_name }}</p>
                     <p><strong>Số điện thoại:</strong> {{ $order->shipping_phone }}</p>
+                    <p><strong>Email:</strong> {{ $order->shipping_email }}</p>
                     <p><strong>Địa chỉ:</strong> {{ $order->shipping_address }}</p>
+                    <p><strong>Thành phố:</strong> {{ $order->shipping_city }}</p>
                     <p><strong>Ghi chú:</strong> {{ $order->notes ?? 'Không có' }}</p>
                 </div>
             </div>
+            
+            <!-- Coupon Information (nếu có) -->
+            @if($order->coupon)
+            <div class="card mb-4">
+                <div class="card-header">
+                    <i class="fas fa-tag me-1"></i>
+                    Thông tin mã giảm giá
+                </div>
+                <div class="card-body">
+                    <p><strong>Mã giảm giá:</strong> {{ $order->coupon->code }}</p>
+                    <p><strong>Loại giảm giá:</strong> 
+                        @if($order->coupon->type == 'fixed')
+                            Giảm giá cố định
+                        @else
+                            Giảm giá theo phần trăm ({{ $order->coupon->value }}%)
+                        @endif
+                    </p>
+                    <p><strong>Giá trị giảm:</strong> {{ number_format($order->discount_amount) }}đ</p>
+                </div>
+            </div>
+            @endif
             
             <!-- Order Actions -->
             <div class="card mb-4">

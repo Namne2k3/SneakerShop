@@ -127,7 +127,7 @@
                                 @endif
                             </td>
                             <td>
-                                <a href="#" class="btn btn-sm btn-primary"><i class="fas fa-eye"></i></a>
+                                <a href="{{ route('admin.orders.show', $order->id) }}" class="btn btn-sm btn-primary"><i class="fas fa-eye"></i></a>
                             </td>
                         </tr>
                         @empty
