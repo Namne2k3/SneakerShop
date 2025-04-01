@@ -150,9 +150,7 @@
                     Doanh thu theo tháng
                 </div>
                 <div class="card-body">
-                    <div class="alert alert-info">
-                        Biểu đồ doanh thu sẽ được hiển thị ở đây khi tích hợp thư viện Chart.js
-                    </div>
+                    <canvas id="monthlyRevenueChart" width="100%" height="50"></canvas>
                 </div>
             </div>
         </div>
@@ -163,12 +161,123 @@
                     Sản phẩm bán chạy
                 </div>
                 <div class="card-body">
-                    <div class="alert alert-info">
-                        Biểu đồ sản phẩm bán chạy sẽ được hiển thị ở đây
-                    </div>
+                    <canvas id="bestSellingProductsChart" width="100%" height="50"></canvas>
                 </div>
             </div>
         </div>
     </div>
 </div>
+
+@push('scripts')
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    // Biểu đồ doanh thu theo tháng
+    var ctx1 = document.getElementById('monthlyRevenueChart').getContext('2d');
+    var monthlyRevenueChart = new Chart(ctx1, {
+        type: 'bar',
+        data: {
+            labels: {!! json_encode($monthLabels) !!},
+            datasets: [{
+                label: 'Doanh thu (VNĐ)',
+                data: {!! json_encode($monthlyRevenue) !!},
+                backgroundColor: 'rgba(54, 162, 235, 0.5)',
+                borderColor: 'rgba(54, 162, 235, 1)',
+                borderWidth: 1
+            }]
+        },
+        options: {
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        // Định dạng số tiền VND
+                        callback: function(value) {
+                            if (value >= 1000000) {
+                                return (value / 1000000) + 'M';
+                            } else if (value >= 1000) {
+                                return (value / 1000) + 'K';
+                            }
+                            return value;
+                        }
+                    }
+                }
+            },
+            plugins: {
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            var label = context.dataset.label || '';
+                            if (label) {
+                                label += ': ';
+                            }
+                            label += new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(context.raw);
+                            return label;
+                        }
+                    }
+                }
+            }
+        }
+    });
+
+    // Biểu đồ sản phẩm bán chạy
+    var ctx2 = document.getElementById('bestSellingProductsChart').getContext('2d');
+    
+    // Chuẩn bị dữ liệu
+    var productNames = [];
+    var productQuantities = [];
+    var productRevenues = [];
+    
+    @foreach($bestSellingProducts as $product)
+        productNames.push('{{ $product->name }}');
+        productQuantities.push({{ $product->total_quantity }});
+        productRevenues.push({{ $product->total_revenue }});
+    @endforeach
+    
+    var bestSellingProductsChart = new Chart(ctx2, {
+        type: 'pie',
+        data: {
+            labels: productNames,
+            datasets: [{
+                label: 'Số lượng bán ra',
+                data: productQuantities,
+                backgroundColor: [
+                    'rgba(255, 99, 132, 0.7)',
+                    'rgba(54, 162, 235, 0.7)',
+                    'rgba(255, 206, 86, 0.7)',
+                    'rgba(75, 192, 192, 0.7)',
+                    'rgba(153, 102, 255, 0.7)'
+                ],
+                borderColor: [
+                    'rgba(255, 99, 132, 1)',
+                    'rgba(54, 162, 235, 1)',
+                    'rgba(255, 206, 86, 1)',
+                    'rgba(75, 192, 192, 1)',
+                    'rgba(153, 102, 255, 1)'
+                ],
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: {
+                    position: 'right',
+                },
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            var label = context.label || '';
+                            if (label) {
+                                label += ': ';
+                            }
+                            label += context.formattedValue + ' sản phẩm';
+                            return label;
+                        }
+                    }
+                }
+            }
+        }
+    });
+</script>
+@endpush
 @endsection
