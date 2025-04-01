@@ -16,6 +16,7 @@ use App\Http\Controllers\WishlistController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\CouponController;
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\ReportController;
 use Illuminate\Support\Facades\Auth;
 
 /*
@@ -126,4 +127,8 @@ Route::prefix('admin')->middleware(['auth', 'admin'])->name('admin.')->group(fun
     Route::patch('/users/{user}/toggle-active', [UserController::class, 'toggleActive'])->name('users.toggle-active');
     Route::post('/users/bulk-action', [UserController::class, 'bulkAction'])->name('users.bulk-action');
     Route::post('/users/update-status', [UserController::class, 'updateStatus'])->name('users.update-status');
+    
+    // Reports
+    Route::get('/reports/revenue', [ReportController::class, 'revenue'])->name('reports.revenue');
+    Route::get('/reports/best-selling', [ReportController::class, 'bestSelling'])->name('reports.best-selling');
 });

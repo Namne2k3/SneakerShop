@@ -241,11 +241,11 @@
                         </a>
                         
                         <div class="sb-sidenav-menu-heading">Báo cáo & Thống kê</div>
-                        <a class="nav-link" href="#">
+                        <a class="nav-link {{ request()->routeIs('admin.reports.revenue') ? 'active' : '' }}" href="{{ route('admin.reports.revenue') }}">
                             <div class="sb-nav-link-icon"><i class="fas fa-chart-bar"></i></div>
                             Doanh thu
                         </a>
-                        <a class="nav-link" href="#">
+                        <a class="nav-link {{ request()->routeIs('admin.reports.best-selling') ? 'active' : '' }}" href="{{ route('admin.reports.best-selling') }}">
                             <div class="sb-nav-link-icon"><i class="fas fa-chart-pie"></i></div>
                             Sản phẩm bán chạy
                         </a>
